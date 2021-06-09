@@ -1,4 +1,5 @@
 import pymongo
+import re
 
 import requests
 from html.parser import HTMLParser
