@@ -21,6 +21,7 @@ TODO:
 - Re-divide end chunks if needed.
 """
 
+
 def _strip_niqqud(s):
     """
     Removes niqqud from the text.
@@ -29,7 +30,6 @@ def _strip_niqqud(s):
     :return: the string without niqqud
     """
     return ''.join(['' if 1456 <= ord(c) <= 1479 else c for c in s])
-
 
 
 def _strip_punc(s):
@@ -41,7 +41,6 @@ def _strip_punc(s):
     :return: the string without punctuation
     """
     return re.sub('[' + string.punctuation + '״—]+?', '', s)
-
 
 
 def _unite_end_chunk(pgs):
@@ -57,7 +56,6 @@ def _unite_end_chunk(pgs):
     curr_page = pgs[0][:-1] + [pgs[0][-1] + ' ' + pgs[1][0]]
     next_pages = [pgs[1][1:]] + pgs[2:]
     return [curr_page] + next_pages
-
 
 
 def _unite_all(pgs):
@@ -79,7 +77,6 @@ def _unite_all(pgs):
         c_pages = _unite_end_chunk(pgs)
         page = c_pages[0]
     return [_strip_punc(_strip_niqqud(c)) for c in page] + _unite_all(c_pages[1:])
-
 
 
 def _remove_mishna(chunks, remove=True):
@@ -109,7 +106,6 @@ def _remove_mishna(chunks, remove=True):
         return [chunks[0]] + _remove_mishna(chunks[1:], remove=rm)
 
 
-
 def _drop_nontext(chunks):
     """
     Removes all text that is not really part of the gemara, namely "גמ׳" and הדרן.
@@ -126,7 +122,6 @@ def _drop_nontext(chunks):
     return [c for c in chunks if c != '']
 
 
-
 def prep_text(text):
     """
     Prepares the text for further analysis, by removing punctuation, niqqud,
@@ -140,7 +135,6 @@ def prep_text(text):
     no_mishna = _remove_mishna(united)
     only_text = _drop_nontext(no_mishna)
     return only_text
-
 
 
 def get_masekhet(masekhet):
