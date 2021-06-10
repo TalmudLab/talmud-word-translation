@@ -10,9 +10,7 @@ and adding back missing letters that were removed when building constructs.
 """
 
 
-"""
-The static variables used in multiple functions.
-"""
+# Static variables for PyMongo
 conn_str = 'mongodb+srv://dov-db:RSzloZinprCNScX2@apicluster.s8lqy.mongodb.net/test'
 _client = pymongo.MongoClient(conn_str)
 _db = _client['bavli']
@@ -44,7 +42,7 @@ def remove_prefix(token):
     Removes the prefix of a word. Since these are always one character,
     it simply eliminates the first letter.
 
-    :param token: a string, containing the word whose prefix is to be removed
+    :param token: a string, containing the unvoweled word whose prefix is to be removed
     :return: a string, containing the word without the prefix
     """
     return token[1:]
@@ -57,6 +55,8 @@ def hebrew_root(token):
 
     :param token: a string, containing the Hebrew word whose root is to be found
     :return: a list, containing all of the possible roots of the word, auto-ordered by confidence by Morfix
+
+    TODO: Mark POS (n, v, adj, etc.), get root of verb rather than conjugated 3MSP.
     """
     page = requests.get('https://www.morfix.co.il/' + token)
     parser = _GetRoot()
@@ -66,26 +66,23 @@ def hebrew_root(token):
 
 def aramaic_verb_root(token):
     """
-    Returns the 3rd person masculine singular past tense version of an Aramaic verb by looking it up in the dicta list.
-    The reason it returns the 3MSP conjugation of the word is that this is the word to look up in the Jastrow.
+    Returns the root and binyan of an Aramaic verb by looking it up in the dicta list.
 
-    :param token: a string, containing the word to look up.
-    :return: a string, containing the 3rd person masculine singular past tense version of the verb.
-
-    TODO: Actually return 3MSP instead of root. Use find(X) in order to return all possibilities.
+    :param token: a string, containing the unvoweled word to look up.
+    :return: a list of tuple pairs, each containing a possible root of the word and corresponding binyan.
     """
-    v_entry = _verbs.find_one({'unvoweled': token})
-    return v_entry['root']
+    v_entries = _verbs.find({'unvoweled': token})
+    unique = set([(v['root'], v['binyan']) for v in v_entries])
+    return list(unique) if unique else []
 
 
 def aramaic_noun_root(token):
     """
     Returns the root of an Aramaic noun by looking it up in the dicta list.
 
-    :param token: a string, containing the word to look up.
-    :return: a string, containing the noun root of the word.
-
-    TODO: use find(X) in order to return all possibilities.
+    :param token: a string, containing the unvoweled word to look up
+    :return: a list, containing the possible roots of the word
     """
-    n_entry = _nouns.find_one({'unvoweled': token})
-    return n_entry['root']
+    n_entries = _nouns.find({'unvoweled': token})
+    unique = set([n['root'] for n in n_entries])
+    return list(unique) if unique else []
