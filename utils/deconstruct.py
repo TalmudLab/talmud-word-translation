@@ -4,6 +4,8 @@ import re
 import requests
 from html.parser import HTMLParser
 
+from collections import defaultdict
+
 """
 Tools for tokenizing words (Rabbinic Hebrew, Biblical Hebrew, and Aramaic) by removing prefixes and suffixes
 and adding back missing letters that were removed when building constructs.
@@ -18,7 +20,7 @@ _verbs = _db['dicta-verbs']
 _nouns = _db['dicta-nouns']
 
 
-class _GetRoot(HTMLParser):
+class _GetRoots(HTMLParser):
     """
     Extends the HTMLParser object and handles retrieving word roots from a Morfix webpage.
     """
@@ -35,6 +37,36 @@ class _GetRoot(HTMLParser):
         if self.root:
             self.results.append(re.sub('\xa0', '', data))
             self.root = False
+
+
+class _AdvancedGetRoots(HTMLParser):
+    """
+    BETA: Returns extra information about the roots as a defaultdict, see below, "advanced_hebrew_root"
+    Extends the HTMLParser object and handles retrieving word roots from a Morfix webpage.
+    """
+    def __init__(self):
+        super().__init__()
+        self.is_root = False
+        self.is_pos = False
+        self.root = ''
+        self.results = defaultdict(lambda: [])
+
+    def handle_starttag(self, tag, attrs):
+        if attrs and attrs[0][1] == 'Translation_spTop_heToen':
+            self.is_root = True
+        if attrs and attrs[0][1] == 'Translation_sp2Top_heToen':
+            self.is_pos = True
+
+    def handle_data(self, data):
+        if self.is_root:
+            self.root = re.sub('\xa0', '', data)
+            self.is_root = False
+        elif self.is_pos:
+            pos = re.sub('\s*.\'\s*', '', data)
+            pos = re.sub('\s\s+', '', pos)
+            pos = pos if pos != '' else 'other'
+            self.results[pos] += [self.root]
+            self.is_pos = False
 
 
 def remove_prefix(token):
@@ -54,14 +86,34 @@ def hebrew_root(token):
     Verb are returned in their 3rd person masculine singular past tense form.
 
     :param token: a string, containing the Hebrew word whose root is to be found
-    :return: a list, containing all of the possible roots of the word, auto-ordered by confidence by Morfix
+    :return: a list of strings, containing all of the possible roots of the word, auto-ordered by confidence by Morfix.
 
     TODO: Mark POS (n, v, adj, etc.), get root of verb rather than conjugated 3MSP.
     """
     page = requests.get('https://www.morfix.co.il/' + token)
-    parser = _GetRoot()
+    parser = _GetRoots()
     parser.feed(page.text)
     return parser.results
+
+
+def advanced_hebrew_root(token):
+    """
+    BETA: Marks the POS of the word and returns binyan of verb options.
+
+    Returns the root of a Hebrew word by searching for the token in Morfix.
+    Verb are returned in their 3rd person masculine singular past tense form.
+
+    :param token: a string, containing the Hebrew word whose root is to be found
+    :return: a dict of lists, whose keys are POS tags and valuess are lists containing all of the possible
+             roots of the word, auto-ordered by confidence by Morfix. Verbs are formatted as tuple pairs
+             like in aramaic_verb_root.
+
+    TODO: format verbs as tuple pairs
+    """
+    page = requests.get('https://www.morfix.co.il/' + token)
+    parser = _AdvancedGetRoots()
+    parser.feed(page.text)
+    return dict(parser.results)
 
 
 def aramaic_verb_root(token):
