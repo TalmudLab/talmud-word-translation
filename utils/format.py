@@ -45,7 +45,7 @@ def _strip_punc(s):
 
 def _unite_end_chunk(pgs):
     """
-    Concatenates the last chunk of an amud  with the first chunk of the next amud.
+    Concatenates the last chunk of an amud with the first chunk of the next amud.
     This is needed because chunks containing the same subject are sometimes divided across amudim.
 
     :param pgs: the pages of the text, formatted as a list containing lists of strings (sub-lists contain
@@ -99,7 +99,7 @@ def _remove_mishna(chunks, remove=True):
     #if chunks[0].split(' ')[0] == 'bigstrongמתני׳strongbig':
     if 'מתני׳' in chunks[0]:
         rm = True
-    # print(str(rm) + '\t' + str(chunks[0]))
+
     if rm:
         return _remove_mishna(chunks[1:], remove=rm)
     else:
@@ -130,6 +130,8 @@ def prep_text(text):
     :param text: a list of sublists containing strings with the text of a set of amudim divided into chunks (presumably
                 one masekhet)
     :return: a list of strings containing the text, prepared for analysis
+
+    TODO: Remove extraneous whitespace.
     """
     united = _unite_all(text)
     no_mishna = _remove_mishna(united)
@@ -138,6 +140,12 @@ def prep_text(text):
 
 
 def get_masekhet(masekhet):
+    """
+    Gets the full text of a masekhet from Sefaria.
+
+    :param masekhet: the name of the masekhet
+    :return: a list a list of sublists containing strings with the text of the masekhet divided into chunks
+    """
     all_data = requests.get('http://www.sefaria.org/api/texts/' + masekhet + '.2-1000')
     pages = json.loads(json.dumps(all_data.json(), indent=4))['he']
     return pages
