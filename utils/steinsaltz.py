@@ -79,34 +79,40 @@ def _prep_steinsaltz(stein):
 def _remove_extraneous(chunk):
     """
     Cleans the punctuation from an individual iteration of _remove_commentary. Removes extra
-    punctuation from commentary section, appends punctuation to end of preceding words.
+    punctuation from commentary section, separates punctuation by spaces.
 
     :param chunk: the text chunk with all punctuation, separated by spaces
     :return: the chunk with only the proper punctuation
+
+    TODO: Actually make it work fully!
     """
-    chunk = re.sub('\s+', ' ', chunk)
+    print(chunk)
 
     strength = ['', '—', ',', '.', '!', '?']  # index is relative strength of punctuation; does not include quotations
 
-    cleaned = '  '
-    punc = ''
-    for char in chunk:
-        print(cleaned)
-        if char != ' ' and cleaned[-1] in '"\'.?,!—':
-            cleaned += ' '
-        if not (char in '"\'.?,!—'):
-            cleaned += char
-            punc = ''
-        if char in '"\'':
-            cleaned += char
-        if char in '.?,!—':
-            punc = char if strength.index(char) > strength.index(punc) else punc
-            if cleaned[-2] in '.?,!—':
-                cleaned = cleaned[:-2]
-            cleaned += ' ' + char
+    clean = '   '
+    curr = ''
+    for c in chunk:
+        print(clean)
+        if not (c in strength or c == '"'):
+            if c != ' ' and curr != '':
+                clean += ' ' + curr + ' '
+                curr = ''
+            clean += c
+        elif c == '"':
+            if curr != '':
+                clean += ' ' + curr + ' '
+                curr = ''
+            clean += ' ' + c + ' '
+        else:
+            curr = c if strength.index(c) > strength.index(curr) else curr
+    if curr != '':
+        clean += ' ' + curr
 
+    clean = re.sub('\s+', ' ', clean)
+    print(clean)
     print('\n')
-    return cleaned
+    return clean
 
 
 def _remove_commentary(stein):
