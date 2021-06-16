@@ -12,7 +12,7 @@ version of the Talmud on Sefaria. Note that this is NOT the same as the dicta pu
 which has not yet been extended to the entirety of the Talmud, whereas the Steinsaltz is completely
 punctuated.
 
-INCOMPLETE
+INCOMPLETE, DEVELOPMENT PAUSED
 """
 
 
