@@ -9,18 +9,8 @@ Updated version of format to allow for more flexibility as we move from testing 
 
 Tools for formatting Talmud text pulled from Sefaria API.
 
-The formatting removes all punctuation, niqqud, mishnas, and irrelevant terms (e.g. מתני׳).
-It leaves only the "chunk" breaks, per the Steinsaltz division.
-As such, page numbers are also deleted.
-
-Note that some of the methods are recursion heavy and can only be completed by making
-a call to sys.setrecursionlimit(X).
-
-Most of these methods are background processes and should not be used directly.
-
-TODO:
-- Re-add page numbers.
-- Re-divide end chunks if needed.
+These tools assume the text has been punctuated and vowelized. All of them will, nevertheless, work
+on non-punctuated/vowelized text, except _does_continue will always return True.
 """
 
 

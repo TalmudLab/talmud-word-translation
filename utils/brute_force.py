@@ -1,8 +1,4 @@
-import re
-import string
-import nltk
-
-from utils.deconstruct import *
+from utils.deconstruct2 import *
 
 """
 Brute force methods for finding all possible roots of any given word,
@@ -38,7 +34,7 @@ def remove_possible_prefixes(token, lang='all'):
 
     possibilities = [token]
     root = token
-    while root[0] in prefixes:
+    while len(root) > 0 and root[0] in prefixes:
         root = remove_prefix(root)
         if _is_possible(root, lang):
             possibilities.append(root)
