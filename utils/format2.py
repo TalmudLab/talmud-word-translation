@@ -1,4 +1,3 @@
-import string
 import re
 
 import requests
@@ -66,7 +65,9 @@ def get_masekhet(masekhet):
     :return: a list of sublists containing tuples, where each sublist is an amud, and each tuple contains a chunk of
              Talmud with its proper tag
     """
-    all_data = requests.get('http://www.sefaria.org/api/texts/' + masekhet + '.2-1000')
+    length = requests.get('http://www.sefaria.org/api/texts/' + masekhet + '.2')
+    length = json.loads(json.dumps(length.json(), indent=4))['length']
+    all_data = requests.get('http://www.sefaria.org/api/texts/' + masekhet + '.2-' + str(length))
     pages = json.loads(json.dumps(all_data.json(), indent=4))['he']
 
     cleaned = [[('', 'm')]]
