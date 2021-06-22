@@ -27,11 +27,21 @@ static_words = {
 
 
 def naive_lookup(word):
+    #entries = _jastrow.find({'$or': [ {'headword': {'$regex': r'.*' + word + r'.*'}},
+    #                                  {'$and': [{'alt_headwords': {'$exists': True}},
+    #                                            {'alt_headwords': {'$elemMatch': {'$regex': r'.*' + word + r'.*'}}}]
+    #                                   } ] })
     entries = _jastrow.find({'headword': {'$regex': r'.*' + word + r'.*'}})
     valid = []
     for e in entries:
+        #all_heads = [e['headword']] + e['alt_headwords']
+        #for head in all_heads:
+        #    just_head = re.sub(r'[^' + alphabet + ''.join(all_nikkud) + ']+', '', head)
+        #    just_head = re.sub(r'\s+', '', just_head)
+        #    if just_head == word:
+        #        valid.append(e)
         just_head = re.sub(r'[^' + alphabet + ''.join(all_nikkud) + ']+', '', e['headword'])
-        just_head = re.sub('\s+', '', just_head)
+        just_head = re.sub(r'\s+', '', just_head)
         if just_head == word:
             valid.append(e)
     return [e['headword'] for e in valid]
@@ -81,9 +91,7 @@ def naive_top_n(word, N=3):
     for i in deconstructed:
         aram_verbs = aramaic_verb_root(i)
         for w in aram_verbs:
-            print(w)
             for v in order_nikkud(w[0]):
-                print(v)
                 v_entries = naive_lookup(v)
                 heads += v_entries[:(N - len(heads))]
                 heads = list(set(heads))

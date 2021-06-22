@@ -6,6 +6,8 @@ A module containing static variables for Hebrew language parsing.
 alphabet = 'אבגדהוזחטיכךלמםנןסעפףצץקרשת'
 prefix_letters = 'אבדהוכלמקש'
 gutturals = 'אחהער'
+weak_letters = 'אהוחיענן'
+strong_letters = 'בגדזטכךלמםספףצץקרשת'
 
 
 # Nikkud

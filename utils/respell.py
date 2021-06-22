@@ -43,7 +43,14 @@ def haser_to_maleh(token):
     :param token: a string, the token, in haser form
     :return: a string containing the token in maleh form
     """
-    found = re.search('[' + alphabet + ']', token[1:])
-    letter = token[0]
-    nik = token[1:found.end()]
-    return
+    pass
+
+
+def maleh_to_haser(token):
+    """
+    Receives a maleh token with nikkud and returns that same token in its haser form.
+
+    :param token: a string, the token, in maleh form
+    :return: a string containing the token in haser form
+    """
+    pass

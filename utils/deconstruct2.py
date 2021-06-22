@@ -71,7 +71,7 @@ def hebrew_root(token):
     :param token: a string, containing the Hebrew word whose root is to be found
     :return: a list of tuples, ordered by context-free likelihood; see description above
     """
-    page = requests.get('https://www.morfix.co.il/' + token)
+    page = requests.get('https://www.morfix.co.il/' + token, headers={'Range': 'bytes=220000-240000'})
     parser = _GetRoots()
     parser.feed(page.text)
     return parser.results
@@ -90,18 +90,30 @@ def _is_voweled(token):
     return not all(non_alph)
 
 
+def _vowelize_shoresh(shoresh):
+    """
+    BETA: Right now simply returns the 3MSP form of the verb.
+
+    Takes an unvowelized shoresh returned from searching the Dicta verb list and vowelizes
+    it so that it can be searched in Jastrow.
+
+    :param shoresh: the three-letter shoresh string
+    :return: the vowelized shoresh, a string
+    """
+    vwl = _verbs.find_one({'root': shoresh, 'form': 'Past Masculine Person_3 Singular', 'binyan': 'Paal'})
+    return vwl['word'] if vwl else ''
+
+
 def aramaic_verb_root(token):
     """
     Returns the possible roots and binyanim of an Aramaic verb by looking it up in the dicta list.
-    Root is in 3MSP form.
 
     :param token: a string, containing the unvoweled word to look up.
     :return: a list of tuple pairs, each containing a possible root of the word and corresponding binyan.
     """
     tag = 'word' if _is_voweled(token) else 'unvoweled'
     v_entries = _verbs.find({tag: token})
-    unique = set([(v['root'], v['binyan']) for v in v_entries])
-    # VOWELIZE VERB ROOTS FOR JASTROW SEARCH basic = kamatz + patach ... ?
+    unique = set([(_vowelize_shoresh(v['root']), v['binyan']) for v in v_entries])
     return list(unique) if unique else []
 
 
