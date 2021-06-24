@@ -2,7 +2,7 @@ import pymongo
 import re
 
 import requests
-from html.parser import HTMLParser
+import json
 
 from utils.hebrew import *
 
@@ -13,48 +13,13 @@ and adding back missing letters that were removed when building constructs.
 
 
 # Static variables for PyMongo
-conn_str = 'mongodb+srv://dov-db:RSzloZinprCNScX2@apicluster.s8lqy.mongodb.net/test'
+pswrd = ''
+with open('pswrd.txt') as text: pswrd = text.read()
+conn_str = 'mongodb+srv://dov-db2:' + pswrd + '@apicluster.s8lqy.mongodb.net/test'
 _client = pymongo.MongoClient(conn_str)
 _db = _client['bavli']
 _verbs = _db['dicta-verbs']
 _nouns = _db['dicta-nouns']
-
-
-class _GetRoots(HTMLParser):
-    """
-    BETA: Returns extra information about the roots as a defaultdict, see below, "advanced_hebrew_root"
-    Extends the HTMLParser object and handles retrieving word roots from a Morfix webpage.
-    """
-    def __init__(self):
-        super().__init__()
-        self.is_root = False
-        self.is_pos = False
-        self.root = ''
-        self.results = []
-
-    def handle_starttag(self, tag, attrs):
-        if attrs and attrs[0][1] == 'Translation_spTop_heToen':
-            self.is_root = True
-        if attrs and attrs[0][1] == 'Translation_sp2Top_heToen':
-            self.is_pos = True
-
-    def handle_data(self, data):
-        if self.is_root:
-            self.root = re.sub('\xa0', '', data)
-            self.is_root = False
-        elif self.is_pos:
-            data = re.sub(r'\s\s+', '', data)
-            binyan = ''
-            if "פ'" in data:
-                pos = 'verb'
-                binyan = data[3:]
-            elif "שֵם" in data:
-                pos = 'noun'
-            else:
-                pos = data if data != '' else 'other'
-            entry = [(self.root, pos)] if binyan == '' else [(self.root, pos, binyan)]
-            self.results += entry
-            self.is_pos = False
 
 
 def hebrew_root(token):
@@ -71,10 +36,29 @@ def hebrew_root(token):
     :param token: a string, containing the Hebrew word whose root is to be found
     :return: a list of tuples, ordered by context-free likelihood; see description above
     """
-    page = requests.get('https://www.morfix.co.il/' + token, headers={'Range': 'bytes=220000-240000'})
-    parser = _GetRoots()
-    parser.feed(page.text)
-    return parser.results
+    while True:
+        try:
+            page = requests.get('http://services.morfix.com/translationhebrew/TranslationService/GetTranslation/' + token, timeout=1)
+            break
+        except requests.ReadTimeout:
+            pass
+    data = json.loads(json.dumps(page.json(), indent=4))
+
+    if data['ResultType'] == 'NoResult':
+        return []
+
+    results = []
+    for w in data['Words']:
+        pos = w['PartOfSpeech']
+        pos = 'שֵם' if 'שֵם' in pos else pos
+        binyan = ''
+        if "פ'" in pos:
+            binyan = pos[3:]
+            pos = 'פועל'
+        word = w['InputLanguageMeanings'][0][0]['DisplayText']
+        results += [(word, pos)] if binyan == '' else [(word, pos, binyan)]
+
+    return results
 
 
 def _is_voweled(token):

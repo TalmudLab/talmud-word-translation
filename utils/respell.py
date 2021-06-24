@@ -54,3 +54,25 @@ def maleh_to_haser(token):
     :return: a string containing the token in haser form
     """
     pass
+
+
+def swap_gender(noun):
+    """
+    Switches the gender of a noun from masculine/feminine singular/plural to the corresponding opposite.
+
+    :param noun: string, a noun in feminine/masculine form with nikkud
+    :return: string, the noun in opposite form; None if the word is not identified as a noun
+
+    TODO: Account for whether second to last letter has dagesh.
+    """
+    # Feminine
+    if noun[-4:] == shva + 'תָא':
+        return noun[:-5] + long_nikkud[0] + 'א'
+    elif noun[-4:] == long_nikkud[0] + 'תָא':
+        return noun[:-5] + long_nikkud[1] + 'י'
+    # Masculine
+    elif noun[-2:] == long_nikkud[0] + 'א':
+        return noun[:-3] + shva + 'תָא'
+    elif noun[-2:] == long_nikkud[1] + 'י':
+        return noun[:-3] + long_nikkud[0] + 'תָא'
+    return None

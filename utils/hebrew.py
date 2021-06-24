@@ -17,7 +17,7 @@ dagesh = 'ּ'
 shin = 'ׁ '
 sin = 'ׂ '
 
-
+other_kamatz = 'ׇ'              # used sometimes, unrecognized by Morfix
 long_nikkud = ['ָ', 'ֵ']
 short_nikkud = ['ַ', 'ֶ', 'ִ', 'ֻ']
 reduced_nikkud = ['ֱ', 'ֲ ', 'ֳ']

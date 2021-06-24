@@ -13,7 +13,9 @@ Tools for searching and retrieving Jastrow entries.
 """
 
 # Static variables for PyMongo
-conn_str = 'mongodb+srv://dov-db:RSzloZinprCNScX2@apicluster.s8lqy.mongodb.net/test'
+pswrd = ''
+with open('pswrd.txt') as text: pswrd = text.read()
+conn_str = 'mongodb+srv://dov-db2:' + pswrd + '@apicluster.s8lqy.mongodb.net/test'
 _client = pymongo.MongoClient(conn_str)
 _db = _client['bavli']
 _jastrow = _db['jastrow']
@@ -27,23 +29,20 @@ static_words = {
 
 
 def naive_lookup(word):
-    #entries = _jastrow.find({'$or': [ {'headword': {'$regex': r'.*' + word + r'.*'}},
-    #                                  {'$and': [{'alt_headwords': {'$exists': True}},
-    #                                            {'alt_headwords': {'$elemMatch': {'$regex': r'.*' + word + r'.*'}}}]
-    #                                   } ] })
-    entries = _jastrow.find({'headword': {'$regex': r'.*' + word + r'.*'}})
+    entries = _jastrow.find({'$or': [{'headword': {'$regex': r'.*' + word + r'.*'}},
+                                     {'alt_headwords': {'$elemMatch': {'$regex': r'.*' + word + r'.*'}}}]})
     valid = []
     for e in entries:
-        #all_heads = [e['headword']] + e['alt_headwords']
-        #for head in all_heads:
-        #    just_head = re.sub(r'[^' + alphabet + ''.join(all_nikkud) + ']+', '', head)
-        #    just_head = re.sub(r'\s+', '', just_head)
-        #    if just_head == word:
-        #        valid.append(e)
-        just_head = re.sub(r'[^' + alphabet + ''.join(all_nikkud) + ']+', '', e['headword'])
-        just_head = re.sub(r'\s+', '', just_head)
-        if just_head == word:
-            valid.append(e)
+        all_heads = [e['headword']] + e['alt_headwords']
+        for head in all_heads:
+            just_head = re.sub(r'[^' + alphabet + ''.join(all_nikkud) + ']+', '', head)
+            just_head = re.sub(r'\s+', '', just_head)
+            if just_head == word:
+                valid.append(e)
+        #just_head = re.sub(r'[^' + alphabet + ''.join(all_nikkud) + ']+', '', e['headword'])
+        #just_head = re.sub(r'\s+', '', just_head)
+        #if just_head == word:
+        #    valid.append(e)
     return [e['headword'] for e in valid]
 
 

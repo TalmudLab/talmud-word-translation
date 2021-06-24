@@ -3,6 +3,8 @@ import re
 import requests
 import json
 
+from utils.hebrew import *
+
 """
 Updated version of format to allow for more flexibility as we move from testing to execution.
 
@@ -35,6 +37,7 @@ def _tag(page, prev):
     tag = ''
     for c in page:
         chunk = re.sub(r'</*[a-z]+>', '', c)
+        chunk = re.sub(other_kamatz, long_nikkud[0], chunk)             # replacement of the weird kamatz
         curr = 'm' if chunk[:8] == 'מַתְנִי׳' else ('g' if chunk[:6] == 'גְּמָ׳' else '0')
         if prev == 'mc' or prev == 'gc':
             tag = prev
