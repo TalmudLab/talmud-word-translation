@@ -61,6 +61,60 @@ def hebrew_root(token):
     return results
 
 
+def remove_nikkud(token):
+    alph_only = ''.join([c for c in token if not (1456 <= ord(c) <= 1479)])
+    return alph_only
+
+
+def hebrew_shoresh(verb, binyan):
+    """
+    Given a Hebrew verb in some verb form, derives the shoresh of the verb.
+    Does not vowelize. Use _vowelize_shoresh on return value.
+
+    :param verb: the verb being search, in past tense form
+    :param binyan: the binyan of the verb
+    :return: the root of the verb, unvoweled
+
+    TODO: Complete _vowelize_shoresh and implement. Fix for one/two letter roots, dropped consonants/vowels.
+
+    TODO 2: Completely replace this for a function in jastrow module that searches other verb binyanim.
+    """
+    verb = remove_nikkud(verb)
+
+    # Kal/Piel/Pual
+    if binyan == 'קל' or binyan == 'פיעל' or binyan == 'פועל':
+        return verb
+
+    # Nifal
+    elif binyan == 'נפעל':
+        return verb[1:]
+
+    # Hifil
+    elif binyan == 'הפעיל':
+        if len(verb) == 3:      # הזה
+            return verb
+        elif len(verb) == 4:      # הִתְנָה
+            return verb[1:]
+        elif len(verb) == 5:      # הצדיק
+            return verb[1:3] + verb[-1]
+
+    # Hufal
+    elif binyan == 'הופעל':
+        if len(verb) == 3:          # הֻטָּה
+            return verb
+        if len(verb) == 4:          # haser
+            return verb[1:]
+        elif len(verb) == 5:        # maleh
+            return verb[2:]
+
+    # Hitpael
+    elif binyan == 'התפעל':
+        return verb[2:]
+
+    else:
+        return None
+
+
 def _is_voweled(token):
     """
     Returns True if the token has nikkud, False otherwise.
@@ -269,3 +323,13 @@ def detach_prefix(token, lang='all'):
     possibilities = [token] + _possible_prefixes(word, nex, possible, lang, len(possible))
 
     return possibilities
+
+
+def remove_object(word):
+    """
+    Removes the direct object suffix of a verb or preposition.
+
+    :param word: string, the verb or preposition
+    :return: string, the verb or prepisition with the direct object suffix removed.
+    """
+    return
