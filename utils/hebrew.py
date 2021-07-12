@@ -14,8 +14,8 @@ strong_letters = 'בגדזטכךלמםספףצץקרשת'
 holam = 'ֹ'
 shva = 'ְ'
 dagesh = 'ּ'
-shin = 'ׁ '
-sin = 'ׂ '
+shin = 'ׁ'  # 'ׁ '
+sin = 'ׂ'   # 'ׂ '
 
 other_kamatz = 'ׇ'              # used sometimes, unrecognized by Morfix
 long_nikkud = ['ָ', 'ֵ']

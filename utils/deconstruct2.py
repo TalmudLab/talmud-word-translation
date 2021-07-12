@@ -68,6 +68,8 @@ def remove_nikkud(token):
 
 def hebrew_shoresh(verb, binyan):
     """
+    DEPRECATED: Jastrow database now has binyan forms
+
     Given a Hebrew verb in some verb form, derives the shoresh of the verb.
     Does not vowelize. Use _vowelize_shoresh on return value.
 
@@ -76,43 +78,46 @@ def hebrew_shoresh(verb, binyan):
     :return: the root of the verb, unvoweled
 
     TODO: Complete _vowelize_shoresh and implement. Fix for one/two letter roots, dropped consonants/vowels.
-
-    TODO 2: Completely replace this for a function in jastrow module that searches other verb binyanim.
     """
     verb = remove_nikkud(verb)
 
     # Kal/Piel/Pual
     if binyan == 'קל' or binyan == 'פיעל' or binyan == 'פועל':
-        return verb
+        pass
 
     # Nifal
     elif binyan == 'נפעל':
-        return verb[1:]
+        verb = verb[1:]
 
     # Hifil
     elif binyan == 'הפעיל':
         if len(verb) == 3:      # הזה
-            return verb
+            pass
         elif len(verb) == 4:      # הִתְנָה
-            return verb[1:]
+            verb = verb[1:]
         elif len(verb) == 5:      # הצדיק
-            return verb[1:3] + verb[-1]
+            verb = verb[1:3] + verb[-1]
 
     # Hufal
     elif binyan == 'הופעל':
         if len(verb) == 3:          # הֻטָּה
-            return verb
+            pass
         if len(verb) == 4:          # haser
-            return verb[1:]
+            verb = verb[1:]
         elif len(verb) == 5:        # maleh
-            return verb[2:]
+            verb = verb[2:]
 
     # Hitpael
     elif binyan == 'התפעל':
-        return verb[2:]
+        verb = verb[2:]
 
     else:
         return None
+
+    if len(verb) == 3:
+        return verb[0] + long_nikkud[0] + verb[1] + short_nikkud[0] + verb[2]
+    else:
+        return verb[0] + short_nikkud[0] + verb[1]
 
 
 def _is_voweled(token):
@@ -325,9 +330,9 @@ def detach_prefix(token, lang='all'):
     return possibilities
 
 
-def remove_object(word):
+def remove_suffix(word):
     """
-    Removes the direct object suffix of a verb or preposition.
+    Removes the direct object suffix of a verb or preposition, or the possessive suffix of a noun.
 
     :param word: string, the verb or preposition
     :return: string, the verb or prepisition with the direct object suffix removed.

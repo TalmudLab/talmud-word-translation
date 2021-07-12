@@ -18,7 +18,7 @@ with open('pswrd.txt') as text: pswrd = text.read()
 conn_str = 'mongodb+srv://dov-db2:' + pswrd + '@apicluster.s8lqy.mongodb.net/test'
 _client = pymongo.MongoClient(conn_str)
 _db = _client['bavli']
-_jastrow = _db['jastrow']
+_jastrow = _db['dov-jastrow']
 
 
 # Words that do not need to be processed and should map directly to specific RIDs.
@@ -28,22 +28,14 @@ static_words = {
 }
 
 
-def naive_lookup(word):
-    entries = _jastrow.find({'$or': [{'headword': {'$regex': r'.*' + word + r'.*'}},
-                                     {'alt_headwords': {'$elemMatch': {'$regex': r'.*' + word + r'.*'}}}]})
-    valid = []
-    for e in entries:
-        all_heads = [e['headword']] + e['alt_headwords']
-        for head in all_heads:
-            just_head = re.sub(r'[^' + alphabet + ''.join(all_nikkud) + ']+', '', head)
-            just_head = re.sub(r'\s+', '', just_head)
-            if just_head == word:
-                valid.append(e)
-        #just_head = re.sub(r'[^' + alphabet + ''.join(all_nikkud) + ']+', '', e['headword'])
-        #just_head = re.sub(r'\s+', '', just_head)
-        #if just_head == word:
-        #    valid.append(e)
-    return [e['headword'] for e in valid]
+def naive_lookup(word, vow=True):
+    # entries = _jastrow.find({'$or': [{'headword': {'$regex': r'.*' + word + r'.*'}},
+    #                                  {'alt_headwords': {'$elemMatch': {'$regex': r'.*' + word + r'.*'}}}]})
+    if vow:
+        entries = _jastrow.find({'all_forms': word})
+    else:
+        entries = _jastrow.find({'all_unvoweled': word})
+    return [e['headword'] for e in entries]
 
 
 def naive_top_n(word, N=3):
@@ -70,41 +62,37 @@ def naive_top_n(word, N=3):
 
     # Naive search
     for i in deconstructed:
-        for w in order_nikkud(i):
-            direct = naive_lookup(w)
-            heads += direct[:(N - len(heads))]
-            heads = list(set(heads))
-            if len(heads) == N:
-                return heads
+        direct = naive_lookup(i)
+        heads += direct[:(N - len(heads))]
+        heads = list( dict.fromkeys(heads) )
+        if len(heads) == N:
+            return heads
     # Dicta noun search
     for i in deconstructed:
         aram_nouns = aramaic_noun_root(i)
         for w in aram_nouns:
-            for n in order_nikkud(w):
-                n_entries = naive_lookup(n)
-                heads += n_entries[:(N - len(heads))]
-                heads = list(set(heads))
-                if len(heads) == N:
-                    return heads
+            n_entries = naive_lookup(w)
+            heads += n_entries[:(N - len(heads))]
+            heads = list( dict.fromkeys(heads) )
+            if len(heads) == N:
+                return heads
     # Dicta verb search
     for i in deconstructed:
         aram_verbs = aramaic_verb_root(i)
         for w in aram_verbs:
-            for v in order_nikkud(w[0]):
-                v_entries = naive_lookup(v)
-                heads += v_entries[:(N - len(heads))]
-                heads = list(set(heads))
-                if len(heads) == N:
-                    return heads
+            v_entries = naive_lookup(w[0])
+            heads += v_entries[:(N - len(heads))]
+            heads = list( dict.fromkeys(heads) )
+            if len(heads) == N:
+                return heads
     # Hebrew search
     for i in deconstructed:
         heb = hebrew_root(i)
         for w in heb:
-            for h in order_nikkud(w[0]):
-                h_entries = naive_lookup(h)
-                heads += h_entries[:(N - len(heads))]
-                heads = list(set(heads))
-                if len(heads) == N:
-                    return heads
+            h_entries = naive_lookup(w[0])
+            heads += h_entries[:(N - len(heads))]
+            heads = list( dict.fromkeys(heads) )
+            if len(heads) == N:
+                return heads
 
     return heads
