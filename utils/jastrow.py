@@ -1,12 +1,7 @@
 import pymongo
-import re
 
-from utils.hebrew import *
-
-# FOR NAIVE TOP-N #
 from utils.deconstruct2 import *
-from utils.respell import *
-# FOR NAIVE TOP-N #
+from collections import Counter
 
 """
 Tools for searching and retrieving Jastrow entries.
@@ -29,13 +24,15 @@ static_words = {
 
 
 def naive_lookup(word, vow=True):
-    # entries = _jastrow.find({'$or': [{'headword': {'$regex': r'.*' + word + r'.*'}},
-    #                                  {'alt_headwords': {'$elemMatch': {'$regex': r'.*' + word + r'.*'}}}]})
+    if word == '':  return []
     if vow:
-        entries = _jastrow.find({'all_forms': word})
+        # Having a two-step process ensures that the results are ranked by whether they are the headword or another form
+        heads_only = [e['headword'] for e in _jastrow.find({'word': word})]
+        other_forms = [e['headword'] for e in _jastrow.find({'all_forms': word})]
     else:
-        entries = _jastrow.find({'all_unvoweled': word})
-    return [e['headword'] for e in entries]
+        heads_only = [e['headword'] for e in _jastrow.find({'unvoweled': word})]
+        other_forms = [e['headword'] for e in _jastrow.find({'all_unvoweled': word})]
+    return list( dict.fromkeys(heads_only + other_forms) )
 
 
 def naive_top_n(word, N=3):
@@ -96,3 +93,73 @@ def naive_top_n(word, N=3):
                 return heads
 
     return heads
+
+
+def smart_naive_search(word):
+    """
+    An improved, but still naive, searcher. The first step in negotiating between an intelligent context-based
+    language model statistical ranker, and the naive algorithm. Like the previous, it looks up all constructions if
+    necessary, but not in every case.
+
+    :param word: The word to search.
+    :return: a list of Jastrow headwords.
+
+    NOTE: The assumptions used here are false. For example:
+    אותו = him
+    אותו = his letter
+    But the latter will be the only return under this model.
+    """
+
+    aram_deconstructed = detach_prefix(word, lang='aram')
+    njaal = naive_jas_and_aram_lookup(aram_deconstructed)
+    if njaal:
+        return njaal
+
+    heb_deconstructed = detach_prefix(word, lang='heb')
+    heads = []
+    # Hebrew search needs to be improved upon. Morfix gives many extra, less likely words that must be left out.
+    # Since the ranking is context independent but takes into account nikkud, I have arbitrarily chosen to drop
+    # all except the top 3 results.
+    # Given the possibility of there not being a prefix, the top results are those that appear the most in the lists.
+    for i in heb_deconstructed:
+        heb = hebrew_root(i)
+        for w in heb:
+            heads += naive_lookup(w[0])
+    if heads:
+        return [i[0] for i in Counter(heads).most_common(3)]
+
+    aram_no_vowel = [remove_nikkud(w) for w in aram_deconstructed]
+    njaal2 = naive_jas_and_aram_lookup(aram_no_vowel, vow=False)
+    if njaal2:
+        return njaal2
+
+    return []
+
+
+def naive_jas_and_aram_lookup(aram_deconstructed, vow=True):
+    # Given the nikkud, if an entry (or entries) in Jastrow matches (or match) exactly, they should be returned on spot,
+    # as they must be correct.
+    heads = []
+
+    for i in aram_deconstructed:
+        heads += naive_lookup(i, vow)
+    if heads:
+        return heads
+
+    # The same rule applies for the Dicta searches. Noun search comes first, though, because verbs can look like nouns.
+    # Dicta noun search
+    for i in aram_deconstructed:
+        aram_nouns = aramaic_noun_root(i)
+        for w in aram_nouns:
+            heads += naive_lookup(w, vow)
+    if heads:
+        return list(dict.fromkeys(heads))
+    # Dicta verb search
+    for i in aram_deconstructed:
+        aram_verbs = aramaic_verb_root(i)
+        for w in aram_verbs:
+            heads += naive_lookup(w[0], vow)
+    if heads:
+        return list(dict.fromkeys(heads))
+
+    return []

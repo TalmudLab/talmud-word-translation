@@ -1,5 +1,4 @@
 import pymongo
-import re
 
 import requests
 import json
@@ -156,7 +155,7 @@ def aramaic_verb_root(token):
     """
     tag = 'word' if _is_voweled(token) else 'unvoweled'
     v_entries = _verbs.find({tag: token})
-    unique = set([(_vowelize_shoresh(v['root']), v['binyan']) for v in v_entries])
+    unique = dict.fromkeys([(_vowelize_shoresh(v['root']), v['binyan']) for v in v_entries])
     return list(unique) if unique else []
 
 
@@ -169,7 +168,7 @@ def aramaic_noun_root(token):
     """
     tag = 'word' if _is_voweled(token) else 'unvoweled'
     n_entries = _nouns.find({tag: token})
-    unique = set([n['root'] for n in n_entries])
+    unique = dict.fromkeys([n['root'] for n in n_entries])
     return list(unique) if unique else []
 
 
