@@ -1,3 +1,8 @@
 pswrd.txt
 *.xml
 *.pyc
+manual_data/
+language_tagger/dicta_all_words_only.csv
+language_tagger/dicta_all_words_only.csv
+database_formatters/dicta_all_roots.csv
+database_formatters/pswrd.txt

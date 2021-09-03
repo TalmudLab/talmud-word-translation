@@ -1,0 +1,3 @@
+Please note that files within the "scripts" folder, if run, must be runn from the root directory.
+
+Also note that mishnayot are always tagged as Rabbinic or Biblical Hebrew. There are some instances where Aramaic appears in the Mishna, but since these instances are so rare, they should be properly mapped manually on a case-by-case basis. A complete list of these can be found in Strack and Stemberger, "Introduction to the Talmud and Midrash."
