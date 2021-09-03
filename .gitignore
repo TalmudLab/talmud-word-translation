@@ -6,3 +6,4 @@ language_tagger/dicta_all_words_only.csv
 language_tagger/dicta_all_words_only.csv
 database_formatters/dicta_all_roots.csv
 database_formatters/pswrd.txt
+proof_of_concept/dicta_all_words_only.csv
