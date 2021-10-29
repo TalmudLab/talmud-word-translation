@@ -2,7 +2,7 @@
 The goal of this project is to use computational methods to connect every word in the Babylonian Talmud with its proper entry in the Jastrow Talmudic dictionary. I.e. it is a single-word translation feature, a la the Google Translate Chrome extension. Development is near completion, and the dataset will be used by [TalmudLab](https://dilac.iac.gatech.edu/node/66) and [Sefaria](https://www.sefaria.org/texts) for their own digital implementations of the Talmud.
 
 ## Support and Dependencies
-This project relies on two proprietary datasets, whic prevents the code from being run unless one hasa access. These are:
+This project relies on two proprietary datasets, which prevents the code from being run unless one has access. These are:
 1. Sefaria's digitized Jastrow databse.
 2. [Dicta](https://dicta.org.il/)'s comprehensive lexicon of Talmudic Aramaic.
 The developer was generously granted access to both of these datasets, without which this project could never have been completed to the degree it has reached at this time.
